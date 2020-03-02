@@ -36,13 +36,14 @@ const authRoutes = createAuthRoutes({
         [email]
         ).then(result => result.rows[0]);
     },
-    insertUser(user, hash) {
+    insertUser(user, hash, display_name, city, lat, long) {
+        console.log(city)
         return client.query(`
-            INSERT into users (email, hash)
-            VALUES ($1, $2)
-            RETURNING id, email;
+            INSERT into users (email, hash, display_name, city_name, lat, long)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
         `,
-        [user.email, hash]
+        [user.email, hash, display_name, city, lat, long]
         ).then(result => result.rows[0]);
     }
 });
@@ -85,7 +86,8 @@ app.get('/location', async(req, respond, next) => {
     }
 });
 
-const getConcertData = async(lat, lng) => {
+
+const getConcertData = async(lat, long) => {
     const concertData = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}/${lat},${long}`);
     return concertData.body.daily.data.map(concert => {
         return {
@@ -93,7 +95,7 @@ const getConcertData = async(lat, lng) => {
         };
     });
 } ;
-app.get('/weather', async(req, res, next) => {
+app.get('/concert', async(req, res, next) => {
     try {
         const concerts = await getConcertData(lat, lng);
         res.json(concerts);
@@ -124,7 +126,7 @@ app.post('/api/me/saved', async(req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *;
         `,
-        [req.userId, req.body.name, req.body.images[1], req.body.classifications[2].name, req.body.dates.start.localDate, req.body.url, req.body.venues[7].name, req.body.venues[8].name, req.body.priceRanges[0].min, req.body.priceRanges[0].max, req.body.venues[11].longitude, req.body.venues[11].latitude]);
+        [req.userId, req.body.name, req.body.images[1], req.body.classifications[0].genre.name, req.body.dates.start.localDate, req.body.url, req.body.venues[0].city.name, req.body.venues[0].state.name, req.body.priceRanges[0].min, req.body.priceRanges[0].max, req.body.venues[0].location.longitude, req.body.venues[0].location.latitude]);
         res.json(newFavorite.rows[0]);
     }
     catch (err) {
