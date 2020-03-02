@@ -36,14 +36,14 @@ const authRoutes = createAuthRoutes({
         [email]
         ).then(result => result.rows[0]);
     },
-    insertUser(user, hash, display_name, city, lat, long) {
+    insertUser(user, hash, displayname, city, lat, long) {
         console.log(city)
         return client.query(`
             INSERT into users (email, hash, display_name, city_name, lat, long)
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *;
         `,
-        [user.email, hash, display_name, city, lat, long]
+        [user.email, hash, displayname, city, lat, long]
         ).then(result => result.rows[0]);
     }
 });
