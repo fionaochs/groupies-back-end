@@ -52,13 +52,55 @@ app.use('/api/auth', authRoutes);
 // for every route, on every request, make sure there is a token
 const ensureAuth = require('./lib/auth/ensure-auth.js');
 app.use('/api/me', ensureAuth);
+
 app.get('/api/concerts', async(req, res) => {
-    const data = await request.get(`hhttps://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
+    const data = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
     res.json(data.body);
 });
 
+app.get('/api/concerts', async(req, res) => {
+    const data = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
+    res.json(data.body);
+});
 
+let lat;
+let long;
 
+app.get('/location', async(req, respond, next) => {
+    try {
+        const location = req.query.search;
+        const URL = `https://us1.locationiq.com/v1/search.php?key=${process.env.GEOCODE_API_KEY}&q=${location}&format=json`;
+        const cityData = await request.get(URL);
+        const firstResult = cityData.body[0];
+        // update the global state of lat and long so that it is acceptable in other routes
+        lat = firstResult.lat;
+        long = firstResult.lon;
+        respond.json({
+            formatted_query: firstResult.display_name,
+            latitude: lat,
+            longitude: long
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+const getConcertData = async(lat, lng) => {
+    const concertData = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}/${lat},${long}`);
+    return concertData.body.daily.data.map(concert => {
+        return {
+            name: concert.name,
+        };
+    });
+} ;
+app.get('/weather', async(req, res, next) => {
+    try {
+        const concerts = await getConcertData(lat, lng);
+        res.json(concerts);
+    } catch (err) {
+        next(err);
+    }
+});
 app.get('/api/me/saved', async(req, res) => {
     try {
         const saved = await client.query(`
