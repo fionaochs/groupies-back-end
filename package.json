@@ -4,7 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon --ignore public server.js",
+    "create-tables": "node lib/data/create-tables.js",
+    "drop-tables": "node lib/data/drop-tables.js",
+    "recreate-tables": "npm run drop-tables && npm run create-tables",
+    "setup-db": "npm run recreate-tables",
+    "setup-db:prod": "heroku run npm run setup-db",
+    "setup-heroku": "heroku addons:create heroku-postgresql:hobby-dev && heroku config:set PGSSLMODE=require"
   },
   "repository": {
     "type": "git",
@@ -24,9 +32,13 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.9.1",
+    "nodemon": "^2.0.2",
     "pg": "^7.18.2",
     "superagent": "^5.2.2",
     "supertest": "^4.0.2"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "directories": {
+    "lib": "lib"
+  }
 }
