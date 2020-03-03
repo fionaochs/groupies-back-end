@@ -53,11 +53,14 @@ app.use('/api/auth', authRoutes);
 const ensureAuth = require('./lib/auth/ensure-auth.js');
 app.use('/api/me', ensureAuth);
 app.get('/api/concerts', async(req, res) => {
-    const data = await request.get(`hhttps://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
+    const data = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
     res.json(data.body);
 });
 
-
+app.get('/api/concerts/:id', async(req, res) => {
+    const data = await request.get(`https://app.ticketmaster.com/discovery/v2/events/${req.params.id}?apikey=${process.env.TICKETMASTER_KEY}`);
+    res.json(data.body);
+});
 
 app.get('/api/me/saved', async(req, res) => {
     try {
