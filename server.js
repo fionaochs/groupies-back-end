@@ -59,11 +59,6 @@ app.get('/api/concerts', async(req, res) => {
     res.json(data.body);
 });
 
-app.get('/api/concerts', async(req, res) => {
-    const data = await request.get(`https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&keyword=concert&apikey=${process.env.TICKETMASTER_KEY}`);
-    res.json(data.body);
-});
-
 let lat;
 let long;
 
